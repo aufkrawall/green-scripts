@@ -1,3 +1,7 @@
+# MIT License
+# Copyright (c) 2026 aufkrawall
+# SPDX-License-Identifier: MIT
+
 <#
 .SYNOPSIS
     Select a display, resolution, NVIDIA RGB/YCbCr output format, chroma subsampling, and PC/TV range.

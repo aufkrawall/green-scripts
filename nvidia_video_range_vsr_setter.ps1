@@ -1,3 +1,7 @@
+# MIT License
+# Copyright (c) 2026 aufkrawall
+# SPDX-License-Identifier: MIT
+
 <#
 .SYNOPSIS
   Sets NVIDIA video-player range and RTX Video Super Resolution values captured from local NVIDIA Control Panel changes.
@@ -16,6 +20,8 @@
   but after reboot the UI should mirror these registry-backed settings.
 
   These captured settings live under HKLM display-driver registry mirrors, so this script requires Administrator rights.
+
+  Debug logging is disabled by default. Use --debug to enable debug logging.
 #>
 
 [CmdletBinding()]
@@ -51,7 +57,7 @@ if (-not (Test-IsAdministrator)) {
     exit 1
 }
 
-$script:DebugEnabled = -not $NoDebugLog
+$script:DebugEnabled = ($PSBoundParameters.ContainsKey('Debug') -and [bool]$PSBoundParameters['Debug'] -and -not $NoDebugLog)
 $script:DebugRoot = $null
 $script:DebugLog = $null
 
@@ -80,6 +86,7 @@ function Initialize-DebugLog {
             RtxVsr = $RtxVsr
             DryRun = [bool]$DryRun
             ListOnly = [bool]$ListOnly
+            Debug = [bool]$script:DebugEnabled
             NoDebugLog = [bool]$NoDebugLog
         }
     }

@@ -1,3 +1,7 @@
+# MIT License
+# Copyright (c) 2026 aufkrawall
+# SPDX-License-Identifier: MIT
+
 <#
 .SYNOPSIS
     Set NVIDIA output color depth to 8, 10, or 12 bpc while keeping Windows Advanced Color/ACM disabled best-effort.

@@ -1,6 +1,10 @@
+# MIT License
+# Copyright (c) 2026 aufkrawall
+# SPDX-License-Identifier: MIT
+
 <#
 .SYNOPSIS
-    Select a display and configure NVIDIA G-SYNC / G-SYNC Compatible mode, including the selected-display checkbox. Adds display-profile DRS override support, automatic DisplayDatabase key selection, admin-required NVIDIA driver reinit, and optional debug logging.
+    Select a display and configure NVIDIA G-SYNC / G-SYNC Compatible mode, including the selected-display checkbox. Adds display-profile DRS override support, automatic DisplayDatabase key selection, admin-required NVIDIA driver reinit, and optional debug logging, enabled with --debug.
 
 .DESCRIPTION
     This script follows the same pattern as the previous NVIDIA scripts:
@@ -28,6 +32,8 @@
       - NVIDIA driver with NVAPI installed
       - 64-bit PowerShell recommended
       - Administrator / UAC-elevated PowerShell is required
+
+    Debug logging is disabled by default. Use --debug to enable debug logging.
 #>
 
 [CmdletBinding()]
@@ -62,7 +68,7 @@ param(
     # Writes a timestamped transcript and registry snapshots. Disabled by default.
     [switch]$DebugLog,
 
-    # Optional debug output folder. Used only with -DebugLog. Default: .\nvidia_gsync_debug_yyyyMMdd_HHmmss
+    # Optional debug output folder. Used only with --debug / -DebugLog. Default: .\nvidia_gsync_debug_yyyyMMdd_HHmmss
     [string]$DebugDirectory = '',
 
     # Skip before/after registry exports of NVIDIA's DisplayDatabase tree.
@@ -80,9 +86,10 @@ $script:DebugLogStarted = $false
 $script:DebugDirectoryPath = $null
 $script:DebugTranscriptPath = $null
 $script:DebugZipPath = $null
+$script:DebugRequested = ([bool]$DebugLog -or ($PSBoundParameters.ContainsKey('Debug') -and [bool]$PSBoundParameters['Debug']))
 
 function Initialize-DebugLog {
-    if (-not $DebugLog) {
+    if (-not $script:DebugRequested) {
         return
     }
 
@@ -139,7 +146,7 @@ function Initialize-DebugLog {
     $metadata += "restart_nvidia_driver=$RestartNvidiaDriver"
     $metadata += "no_display_reset=$NoDisplayReset"
     $metadata += "dry_run=$DryRun"
-    $metadata += "debug_log=$DebugLog"
+    $metadata += "debug_log=$script:DebugRequested"
     $metadata += "no_debug_registry_export=$NoDebugRegistryExport"
     $metadata | Set-Content -Path $metadataPath -Encoding UTF8
 }
@@ -149,7 +156,7 @@ function Export-DebugRegistrySnapshot {
         [Parameter(Mandatory=$true)][string]$Name
     )
 
-    if ((-not $DebugLog) -or $NoDebugRegistryExport -or [string]::IsNullOrWhiteSpace($script:DebugDirectoryPath)) {
+    if ((-not $script:DebugRequested) -or $NoDebugRegistryExport -or [string]::IsNullOrWhiteSpace($script:DebugDirectoryPath)) {
         return
     }
 
@@ -176,7 +183,7 @@ function Export-DebugRegistrySnapshot {
 }
 
 function Write-DebugLogSummary {
-    if ((-not $DebugLog) -or [string]::IsNullOrWhiteSpace($script:DebugDirectoryPath)) {
+    if ((-not $script:DebugRequested) -or [string]::IsNullOrWhiteSpace($script:DebugDirectoryPath)) {
         return
     }
 
@@ -195,7 +202,7 @@ function Write-DebugLogSummary {
 }
 
 function Complete-DebugLog {
-    if ((-not $DebugLog) -or [string]::IsNullOrWhiteSpace($script:DebugDirectoryPath)) {
+    if ((-not $script:DebugRequested) -or [string]::IsNullOrWhiteSpace($script:DebugDirectoryPath)) {
         return
     }
 
@@ -2727,6 +2734,6 @@ if ($script:RunFailed) {
 
 Write-Host ''
 Write-Host 'Done. Verify in NVIDIA Control Panel and Windows Settings > System > Display > Advanced display.'
-if ($DebugLog -and $script:DebugZipPath) {
+if ($script:DebugRequested -and $script:DebugZipPath) {
     Write-Host "Debug log saved to: $script:DebugZipPath"
 }

@@ -1,3 +1,7 @@
+# MIT License
+# Copyright (c) 2026 aufkrawall
+# SPDX-License-Identifier: MIT
+
 <#
 .SYNOPSIS
     Control NVIDIA per-display dithering settings from PowerShell.
